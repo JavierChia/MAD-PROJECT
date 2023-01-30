@@ -37,7 +37,6 @@ export default function SettingsScreen({ navigation }) {
     const onPressHandler = (id) => {
         if (id === 'logout') {
             signOut(auth).then(() => {
-                console.log('loggedout')
                 navigation.replace("LoginPage")
               }).catch((error) => {
                 // An error happened.

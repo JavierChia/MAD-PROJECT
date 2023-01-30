@@ -9,9 +9,10 @@ import { Image, SafeAreaView, View, Text, StyleSheet, useWindowDimensions, TextI
 import fireBaseApp from './firebase';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth"
 import Icon from 'react-native-vector-icons/Ionicons';
-import { back } from 'react-native/Libraries/Animated/Easing';
 import Checkbox from 'expo-checkbox';
+import { LogBox } from 'react-native';
 
+LogBox.ignoreLogs(['AsyncStorage has been extracted from react-native core and will be removed in a future release.']);
 
 const auth = getAuth(fireBaseApp);
 
@@ -21,6 +22,7 @@ export default function LoginScreen({ navigation }) {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [isChecked, setChecked] = useState(false);
 
 
@@ -31,7 +33,19 @@ export default function LoginScreen({ navigation }) {
                 navigation.navigate("NavigationBar")
                 console.log(user.email)
             })
-            .catch((error) => alert(error.message));
+            .catch((error) => {
+                switch (error.code) {
+                    case 'auth/invalid-email':
+                    case 'auth/user-not-found':
+                        alert('Invalid email address!');
+                        break;
+                    case 'auth/wrong-password':
+                        alert('Invalid password!');
+                        break;
+                    default:
+                        alert(error.message);
+                }
+            });
     }
 
     // //check if user is already signed in
@@ -67,14 +81,20 @@ export default function LoginScreen({ navigation }) {
                         onChangeText={text => setEmail(text)}
                     />
                 </View>
-                <View style={styles.textInputContainer}>
+                <View style={styles.pwTextInputContainer}>
                     <Icon name='lock-closed-outline' size={26} style={styles.iconStyle} />
-                    <TextInput style={styles.textInput}
+                    <TextInput style={styles.pwTextInput}
                         placeholder='Enter Password'
                         textContentType='password'
-                        secureTextEntry={true}
+                        secureTextEntry={!showPassword}
                         value={password}
-                        onChangeText={text => setPassword(text)} />
+                        onChangeText={text => setPassword(text)}>
+                    </TextInput>
+                    <TouchableOpacity style={styles.visibility} onPress={() => {
+                        setShowPassword(!showPassword);
+                    }}>
+                        <Text>{showPassword ? <Icon name='eye-off' size={26} /> : <Icon name='eye' size={26} />}</Text>
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.forgot}>
                     <TouchableOpacity><Text style={styles.forgotText}>Forgot Password?</Text></TouchableOpacity>
@@ -90,7 +110,6 @@ export default function LoginScreen({ navigation }) {
                     >
                         <Text style={styles.registerText}>Register!</Text>
                     </TouchableOpacity>
-
                 </View>
             </View>
 
@@ -147,6 +166,26 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         fontSize: 18,
     },
+
+    pwTextInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderBottomWidth: 1,
+        borderColor: 'black',
+        width: '90%',
+        padding: '1.2%',
+        marginTop: '8%',
+
+    },
+    pwTextInput: {
+        width: '81%',
+        borderLeftWidth: 0.5,
+        borderLeftColor: '#000',
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        fontSize: 18,
+    },
+
     iconStyle: {
         justifyContent: 'center',
         width: '10%',

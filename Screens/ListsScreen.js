@@ -1,30 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, Pressable, TouchableOpacity, SectionList } from 'react-native';
 import IAD from 'react-native-vector-icons/AntDesign'
 import II from 'react-native-vector-icons/Ionicons'
 import { app as firebase } from './firebase'
 import CircularProgress from 'react-native-circular-progress-indicator';
-import { doc, updateDoc, getDocs, getFirestore, collection, query, where, onSnapshot, setDoc } from 'firebase/firestore'
+import { doc, updateDoc, getDoc, getFirestore, collection, query, where, onSnapshot, setDoc } from 'firebase/firestore'
 import { getAuth, onAuthStateChanged } from "firebase/auth"
-import { back } from 'react-native/Libraries/Animated/Easing';
-
-function AddList({ navigation }) {
-    return (
-        <TouchableOpacity
-            style={styles.addButtonStyle}
-            onPress={() => navigation.navigate('NewListsScreen')}
-        ><II name="add" size={50} color='#fff' />
-        </TouchableOpacity>
-    );
-}
+import {EventRegister} from 'react-native-event-listeners';
+import themeContext from '../config/themeContext';
 
 const auth = getAuth(firebase);
 const user = auth.currentUser;
 const db = getFirestore(firebase)
 
-export default function ListsScreen({ navigation }, id) {
+export default function ListsScreen({ navigation }) {
     const [listNames, setListNames] = useState([]);
     const [uid, setUid] = useState('');
+    const theme = useContext(themeContext);
     //Get User ID from Firebase, as well as display all the user's task lists
     useEffect(() => {
         onAuthStateChanged(auth, (user) => {
@@ -33,7 +25,19 @@ export default function ListsScreen({ navigation }, id) {
                 getListName(user.uid);
             }
         });
+        
     }, []);
+
+
+    function AddList({ navigation }) {
+        return (
+            <TouchableOpacity
+                style={styles.addButtonStyle}
+                onPress={() => navigation.navigate('NewListsScreen')}
+            ><II name="add" size={50} color='#fff' />
+            </TouchableOpacity>
+        );
+    }
 
     //function to display all the user's task lists
     const getListName = async (uid) => {
@@ -64,7 +68,6 @@ export default function ListsScreen({ navigation }, id) {
             alert('Error toggling' + error);
         }
     }
-
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <View style={styles.headerContainer}>
@@ -72,6 +75,7 @@ export default function ListsScreen({ navigation }, id) {
                 <AddList navigation={navigation} />
             </View>
             <SectionList
+                style = {[styles.sectionList,{backgroundColor: theme.backgroundColor}]}
                 stickySectionHeadersEnabled={false}
                 sections={[
                     { title: 'Pending', data: listNames.filter(item => !item.Overdue && item.NumberOfTasks !== item.TasksDone) },
@@ -79,13 +83,13 @@ export default function ListsScreen({ navigation }, id) {
                     { title: 'Completed', data: listNames.filter(item => item.NumberOfTasks === item.TasksDone) },
                 ]}
                 renderItem={({ item, index }) => (
-                    <Pressable key={index} style={[styles.listsContainer, item.NumberOfTasks === item.TasksDone
-                        ? { backgroundColor: "#03EF62", borderWidth: 2 }
+                    <Pressable key={index} style={[styles.listsContainer,{backgroundColor: theme.cardBackgroundColor, borderColor: theme.borderColor}, item.NumberOfTasks === item.TasksDone
+                        ? { backgroundColor: "#36da45" }
                         : {}, item.Overdue ? { backgroundColor: "#fd3259", borderWidth: 2 } : {}]} onPress={() => navigation.navigate("TasksScreen")}>
                         <View style={styles.starAndName}>
                             {!item.Overdue && !(item.NumberOfTasks === item.TasksDone) && (
                                 <IAD
-                                    style={styles.starButton}
+                                    style={[styles.starButton, {color: theme.color}]}
                                     name={item.isStarred ? "star" : "staro"}
                                     size={30}
                                     color="#000"
@@ -93,7 +97,7 @@ export default function ListsScreen({ navigation }, id) {
                                         toggleStar(item.id, item.isStarred);
                                     }}
                                 />
-                            )}<Text style={styles.listStyle}>{item.ListName}</Text>
+                            )}<Text style={[styles.listStyle, {color: theme.color}]}>{item.ListName}</Text>
                         </View>
                         {item.NumberOfTasks === item.TasksDone ? (
                             <II
@@ -111,7 +115,7 @@ export default function ListsScreen({ navigation }, id) {
                                 progressValueFontSize={14}
                                 radius={25}
                                 clockwise={false}
-                                progressValueColor={"#000"}
+                                progressValueColor={theme.color}
                                 activeStrokeColor={"#03EF62"}
                                 inActiveStrokeColor={'#2ecc71'}
                                 inActiveStrokeOpacity={0.2}
@@ -121,7 +125,7 @@ export default function ListsScreen({ navigation }, id) {
                 )}
                 renderSectionHeader={({ section: { title } }) => (
 
-                    <Text style={styles.sectionHeader}>{title}</Text>
+                    <Text style={[styles.sectionHeader, {color: theme.color}]}>{title}</Text>
                 )}
                 keyExtractor={(item, index) => item + index}
             />
@@ -130,12 +134,10 @@ export default function ListsScreen({ navigation }, id) {
     );
 }
 
+
 const styles = StyleSheet.create({
     listNamesContainer: {
         flex: 1,
-    },
-    progressCircle: {
-
     },
     sectionHeader: {
         fontSize: 30,
@@ -185,7 +187,6 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
         marginVertical: 10,
         borderWidth: 2,
-        borderColor: 'black',
     },
     starAndName: {
         flexDirection: 'row',
@@ -193,9 +194,6 @@ const styles = StyleSheet.create({
     },
     listStyle: {
         fontSize: 24,
-        marginLeft: 10
+        marginLeft: 10,
     },
-    starButton: {
-
-    }
 });

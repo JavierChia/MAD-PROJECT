@@ -1,52 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Image, SafeAreaView, View, Text, StyleSheet, ScrollView, SectionList } from 'react-native';
 import CheckBox from 'expo-checkbox';
+import { EventRegister } from 'react-native-event-listeners';
+import { app as firebase } from './firebase'
+import { doc, updateDoc, getDoc, getFirestore, collection, query, where, getDocs, onSnapshot } from 'firebase/firestore'
+import { getAuth, onAuthStateChanged } from "firebase/auth"
+import themeContext from '../config/themeContext';
+import theme from '../config/theme';
 
-const DATA = [
-  {
-    title: { name: "Today's Task", color: '#000' },
-    data: ['Task 1', 'Task 2'],
-  },
-  {
-    title: { name: 'Overdue', color: '#ff0000' },
-    data: ['Task 3', 'Task 4'],
-  },
-  {
-    title: { name: 'Completed!', color: '#03ef62' },
-    data: ['Task 5', 'Task 6'],
-  },
+const auth = getAuth(firebase);
+const user = auth.currentUser;
+const db = getFirestore(firebase);
 
-];
+export default function NewHomeScreen() {
+  const [uid, setUid] = useState('');
+  const theme = useContext(themeContext)
 
-export default function HomeScreen() {
-  const Task = ({ title }) => {
-    const [isChecked, setChecked] = useState(false);
-    return (
-      <View style={styles.tasks}>
-        <Text style={styles.tasksTitle}>{title}</Text>
-        <CheckBox
-          style={styles.checkBox}
-          color={isChecked ? 'black' : 'black'}
-          value={isChecked}
-          onValueChange={setChecked}
-        />
-      </View>
-    );
-  };
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUid(user.uid);
+        getTasksAndListName(user.uid)
+      }
+    });
+
+  }, []);
+
+  const getTasksAndListName = (uid) => {
+    var tasksAndListNames = [];
+    var listsRef = collection(db, "users", uid, "lists");
+    getDocs(listsRef).then(function (listsSnapshot) {
+      listsSnapshot.forEach(function (listDoc) {
+        var listName = listDoc.data().name;
+        var tasksRef = listDoc.ref.collection("tasks");
+        tasksRef.get().then(function (tasksSnapshot) {
+          tasksSnapshot.forEach(function (taskDoc) {
+            var task = taskDoc.data();
+            tasksAndListNames.push({
+              listName: listName,
+              task: task
+            });
+          });
+        });
+      });
+    });
+  }
+
+  // def get_tasks_and_list_names(user_id):
+  //   tasks_and_list_names = []
+  //   lists_ref = db.collection(u'users').document(user_id).collection(u'lists')
+  //   lists = lists_ref.stream()
+  //   for list_doc in lists:
+  //       list_name = list_doc.to_dict()['name']
+  //       tasks_ref = list_doc.reference.collection(u'tasks')
+  //       tasks = tasks_ref.stream()
+  //       for task_doc in tasks:
+  //           task = task_doc.to_dict()
+  //           tasks_and_list_names.append((list_name, task))
+  //   return tasks_and_list_names
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#eaeaea' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.backgroundColor }}>
       <View style={styles.headerContainer}>
-          <Image style={{width: '40%', height: '54%'}}source={require('./logoH.png')}></Image>
+        <Image style={{ width: '40%', height: '54%' }} source={require('./logoH.png')}></Image>
       </View>
-      <SectionList
-        sections={DATA}
-        keyExtractor={(item, index) => item + index}
-        renderItem={({ item }) => <Task title={item} />}
-        renderSectionHeader={({ section: { title } }) => (
-          <Text style={[styles.header, { color: title.color }]}>{title.name}</Text>
-        )}
-        stickySectionHeadersEnabled={false}
-      />
     </SafeAreaView>
   );
 }
@@ -79,18 +96,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center'
   },
-  // imageContainer: {
-  //   padding: 10,
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   backgroundColor: 'black',
-  // },
-  // image: {
-  //   backgroundColor: 'black',
-  //   width: 150,
-  //   height: 50,
-  // },
   checkBox: {
-    alignItems: 'center'
+    alignItems: 'center',
+    tintColor: 'pink'
   }
 });

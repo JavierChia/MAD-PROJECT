@@ -1,11 +1,17 @@
-import React, { Fragment } from 'react';
-import { SafeAreaView, View, Text, StyleSheet, SectionList, TouchableOpacity } from 'react-native';
+import React, { Fragment, useState, useEffect, useContext } from 'react';
+import { SafeAreaView, View, Text, StyleSheet, SectionList, TouchableOpacity, Switch } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import fireBaseApp from './firebase';
-import { getAuth, signOut } from "firebase/auth"
+import firebase from './firebase';
+import { doc, updateDoc, getFirestore, getDoc } from 'firebase/firestore'
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth"
 
-const auth = getAuth(fireBaseApp);
+import {EventRegister} from 'react-native-event-listeners';
+import themeContext from '../config/themeContext';
+
+const auth = getAuth(firebase);
+const user = auth.currentUser;
+const db = getFirestore(firebase);
 
 const SETTINGS = [
     {
@@ -26,50 +32,98 @@ const SETTINGS = [
         title: 'ACCOUNT SETTINGS',
         data: [
             { id: 'resetpw', icon: 'finger-print-outline', label: 'Reset Password', icon2: 'chevron-forward-outline' },
-            { id: 'logout', icon: 'log-out-outline', label: 'Log Out', icon2: '' }, 
+            { id: 'logout', icon: 'log-out-outline', label: 'Log Out', icon2: '' },
         ]
     }
 ]
 
-
 export default function SettingsScreen({ navigation }) {
+    const [darkMode, setDarkMode] = useState(false);
+    const [uid, setUid] = useState('');
+    const theme = useContext(themeContext);
+
+    useEffect(() => {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUid(user.uid);
+                getMode(user.uid)
+            }
+        });
+    }, []);
 
     const onPressHandler = (id) => {
         if (id === 'logout') {
             signOut(auth).then(() => {
-                navigation.replace("LoginPage")
-              }).catch((error) => {
+
+            }).catch((error) => {
                 // An error happened.
-              });
+            });
+        }
+    }
+
+    const getMode = async (uid) => {
+        const docRef = doc(db, "users", uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            setDarkMode(docSnap.data().mode);
+        } else {
+
+        }
+    }
+
+    const updateMode = (value) => {
+        try {
+            const ref = doc(db, "users", uid);
+            updateDoc(ref, {
+                mode: value,
+            })
+        } catch (error) {
+            alert('Error toggling' + error);
         }
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#eaeaea' }}>
+        <SafeAreaView style={[styles.background, {backgroundColor: theme.backgroundColor}]}>
             <View style={styles.headerContainer}>
                 <Text style={styles.header}>Settings</Text>
             </View>
-                <SectionList
-                    sections={SETTINGS}
-                    keyExtractor={(item, index) => item + index}
-                    renderItem={({ item }) =>
-                        <TouchableOpacity onPress = {() => onPressHandler(item.id)} style={styles.settingOptions}>
-                            <Icon name={item.icon} size={26} style={styles.iconStyle} />
-                            <Text style={styles.labelStyle}>{item.label}</Text>
-                            <Text style={styles.statusStyle}>{item.status}</Text>
-                            <Icon name={item.icon2} size={26} style={styles.icon2Style} />
-                        </TouchableOpacity>
-                    }
-                    renderSectionHeader={({ section: { title } }) => (
-                        <Text style={styles.settingsSectionHeader}>{title}</Text>
-                    )}
-                />
-                
+            <SectionList
+                sections={SETTINGS}
+                keyExtractor={(item, index) => item + index}
+                renderItem={({ item }) =>
+                    <TouchableOpacity onPress={() => onPressHandler(item.id)} style={[styles.settingOptions, {backgroundColor: theme.cardBackgroundColor}]}>
+                        <Icon name={item.icon} size={26} style={[styles.iconStyle, {color: theme.color}]} />
+                        <Text style={[styles.labelStyle, {color: theme.color}]}>{item.label}</Text>
+                        {item.id === 'mode' ? (
+                            <Switch
+                                value={darkMode}
+                                onValueChange={(value) => { 
+                                    setDarkMode(value), 
+                                    updateMode(value) 
+                                    EventRegister.emit("changeTheme", darkMode)
+                                }}
+                            />
+                        ) : (
+                            <>
+                                <Text style={[styles.statusStyle, {color: theme.color}]}>{item.status}</Text>
+                                <Icon name={item.icon2} size={26} style={[styles.icon2Style, {color: theme.color}]} />
+                            </>
+                        )}
+                    </TouchableOpacity>
+                }
+                renderSectionHeader={({ section: { title } }) => (
+                    <Text style={styles.settingsSectionHeader}>{title}</Text>
+                )}
+            />
+
         </SafeAreaView>
     )
 }
 
 const styles = StyleSheet.create({
+    background: {
+        flex: 1,
+    },
     headerContainer: {
         height: '11%',
         backgroundColor: '#000',
@@ -99,19 +153,19 @@ const styles = StyleSheet.create({
         marginTop: 10,
         marginHorizontal: 20,
         borderRadius: 10,
-        overflow: 'hidden'
+        overflow: 'hidden',
     },
     iconStyle: {
-        marginRight: 15
+        marginRight: 15,
     },
     icon2Style: {
         marginLeft: 3,
-        color: '#616161'
+        // color: '#616161'
     },
     labelStyle: {
         flex: 1,
         fontSize: 22,
-        fontWeight: '400'
+        fontWeight: '400',
     },
     statusStyle: {
         fontSize: 20,

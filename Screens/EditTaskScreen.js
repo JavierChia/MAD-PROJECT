@@ -10,11 +10,13 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
+
+import { useIsFocused } from "@react-navigation/native";
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function App({ navigation }) {
+export default function App({ route, navigation }) {
   const [taskName, setTaskName] = useState('');
   const [desc, setDesc] = useState('');
 
@@ -23,6 +25,8 @@ export default function App({ navigation }) {
   const [date, setDate] = useState(new Date());
   const [isDisplayTime, showTime] = useState(false);
   const [time, setTime] = useState(new Date('Jan 1, 2023, 12:00:00'));
+
+  const isFocused = useIsFocused();
 
   function onTaskNameChange(newName) {
     setTaskName(newName);
@@ -67,7 +71,7 @@ export default function App({ navigation }) {
     setDesc(newDesc);
   }
 
-  handleCreate = async () => {
+  const handleCreate = async () => {
     try {
       if (taskName == '') {
         alert('Task name cannot be blank!');
@@ -89,13 +93,16 @@ export default function App({ navigation }) {
           desc: desc,
           done: false
         };
-        tasks.push(taskInfo);
-        await AsyncStorage.setItem('tasks', JSON.stringify(tasks));
-        setTaskName('');
-        setDeadlineEnabled(false);
-        setDate(new Date());
-        setTime(new Date('Jan 1, 2023, 12:00:00'));
-        setDesc('');
+        const index = route.params.index;
+        var tempTasks = [];
+        for (let i in tasks) {
+            if (i == index) {
+                tempTasks.push(taskInfo)
+            } else {
+                tempTasks.push(tasks[i]);
+            }
+        }
+        await AsyncStorage.setItem('tasks', JSON.stringify(tempTasks));
         navigation.navigate('NewListsScreen');
       }
     } catch (error) {
@@ -103,9 +110,19 @@ export default function App({ navigation }) {
     }
   };
 
+  const readData = async () => {
+    const data = route.params.data;
+    setTaskName(data.name);
+    if (data.deadline) {
+        setDeadlineEnabled(true);
+        setDate(new Date(data.deadline));
+        setTime(new Date(data.deadline));
+    }
+    setDesc(data.desc);
+  }
   useEffect(() => {
-    setTaskName('');
-  }, []);
+    readData()
+  },[isFocused]);
 
   return (
     <Fragment>
@@ -119,7 +136,7 @@ export default function App({ navigation }) {
             }}>
             <AntDesign name="leftcircleo" style={styles.returnIcon} />
           </TouchableOpacity>
-          <Text style={styles.header}>New Task</Text>
+          <Text style={styles.header}>Edit Task</Text>
         </View>
         <View style={styles.settings}>
           <View style={styles.titleInputContainer}>
@@ -197,7 +214,7 @@ export default function App({ navigation }) {
           <TouchableOpacity
             style={styles.createButton}
             onPress={handleCreate}>
-            <Text style={styles.buttonText}>Create</Text>
+            <Text style={styles.buttonText}>Edit</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

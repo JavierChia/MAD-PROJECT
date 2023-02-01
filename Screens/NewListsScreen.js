@@ -12,12 +12,11 @@ import {
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useIsFocused } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { app as firebase } from './firebase';
-import { collection, getFirestore, addDoc } from "firebase/firestore";
+import { collection, getFirestore, addDoc, setDoc, doc } from "firebase/firestore";
 
 const db = getFirestore(firebase)
 const auth = getAuth();
@@ -37,7 +36,7 @@ const formatTime = (deadline) => {
   else return "[No Deadline]"
 };
 
-export default function App({ navigation }) {
+export default function App({ route, navigation }) {
 
   const isFocused = useIsFocused();
 
@@ -57,38 +56,15 @@ export default function App({ navigation }) {
   const [uid,setUID] = useState(null);
 
   useEffect(() => {
-    const getUser = () => {
-      onAuthStateChanged(auth, (user) => {
-        const uid = user.uid;
-        setUID(uid)
-      });
-    }
-
-    const readData = async () => {
-      try {
-        let tasks = await AsyncStorage.getItem('tasks');
-        if (tasks == null) {
-          setTasks([])
-          await AsyncStorage.setItem('tasks', '[]');
-        } else {
-          setTasks(JSON.parse(tasks));
-        }
-        let name = await AsyncStorage.getItem('listName');
-        if (name) {
-          setListName(name);
-        }
-        let star = await AsyncStorage.getItem("starred");
-        if (star != null) {
-          setStarred(eval(star));
-        }
-  
-      } catch (error) {
-        alert("Error while reading data" + error);
+    onAuthStateChanged(auth, (user) => {
+      const uid = user.uid;
+      setUID(uid)
+    });
+    if (isFocused) {
+      if (route.params) {
+        setTasks(JSON.parse(route.params.tasks))
       }
-    };
-
-    getUser();
-    readData();
+    }
   },[isFocused]);
 
   const handleCreate = async () => {
@@ -99,10 +75,6 @@ export default function App({ navigation }) {
         alert("There must at least be one task in the list!")
       }
       else {
-        await AsyncStorage.removeItem("tasks");
-        await AsyncStorage.removeItem("listName");
-        await AsyncStorage.setItem("starred","false");
-        await AsyncStorage.setItem('tasks', '[]');
         const docRef = await addDoc(collection(db,`users/${uid}/Lists`), {
           listName: listName,
           starred: starred,
@@ -115,19 +87,19 @@ export default function App({ navigation }) {
             deadline: task.deadline,
             desc: task.desc,
             done: "false"
+          }).catch((error)=> {
+            alert(error)
           })
         });
 
-        setListName("");
-        setStarred(false);
-        setTasks([]);
+        navigation.navigate("Lists")
       }
     } catch (error) {
       alert("Error while creating list" + error)
     }
   };
 
-  const removeTask = async (index) => {
+  const removeTask = (index) => {
     const tasks = []
     for (let i in taskList) {
       if (i != index) {
@@ -135,18 +107,17 @@ export default function App({ navigation }) {
       }
     }
     setTasks(tasks)
-    await AsyncStorage.setItem("tasks",JSON.stringify(tasks))
   }
 
-  const editTask = async (index) => {
-    navigation.navigate("EditTaskScreen",{index: index, data: taskList[index]});
+  const editTask =  (index) => {
+    navigation.navigate("EditTaskScreen",{sender:"NewListsScreen", index: index, tasks: JSON.stringify(taskList)});
   }
 
   const renderTask = ({ item,index }) => {
     return (
       <View key={index} >
           <TouchableOpacity style={styles.task} onPress={() => {editTask(index)}}>
-            <View>
+            <View style={{width: "70%"}}>
               <Text style={styles.taskText}>{item.name}</Text>
               <Text>{formatTime(item.deadline)}</Text>
             </View>
@@ -219,9 +190,7 @@ export default function App({ navigation }) {
             <TouchableOpacity
               style={styles.newTask}
               onPress={async() => {
-                navigation.navigate('NewTaskScreen');
-                await AsyncStorage.setItem("listName",listName);
-                await AsyncStorage.setItem("starred",starred.toString());
+                navigation.navigate('NewTaskScreen',{sender:"NewListsScreen", tasks:JSON.stringify(taskList)});
               }}>
               <Text style={styles.newTaskText}>+</Text>
             </TouchableOpacity>
@@ -282,6 +251,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   titleInput: {
+    textAlign: "center",
     fontSize: 28,
     color: 'white',
   },
@@ -304,7 +274,7 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
   },
   task: {
-    flex: 1,
+    flex: 0,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

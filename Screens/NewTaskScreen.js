@@ -12,9 +12,8 @@ import {
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function App({ navigation }) {
+export default function App({ route, navigation }) {
   const [taskName, setTaskName] = useState('');
   const [desc, setDesc] = useState('');
 
@@ -72,8 +71,6 @@ export default function App({ navigation }) {
       if (taskName == '') {
         alert('Task name cannot be blank!');
       } else {
-        var tasks = await AsyncStorage.getItem('tasks');
-        tasks = JSON.parse(tasks);
         const deadline = new Date(
           date.getFullYear(),
           date.getMonth(),
@@ -89,14 +86,9 @@ export default function App({ navigation }) {
           desc: desc,
           done: false
         };
-        tasks.push(taskInfo);
-        await AsyncStorage.setItem('tasks', JSON.stringify(tasks));
-        setTaskName('');
-        setDeadlineEnabled(false);
-        setDate(new Date());
-        setTime(new Date('Jan 1, 2023, 12:00:00'));
-        setDesc('');
-        navigation.navigate('NewListsScreen');
+        var tasks = JSON.parse(route.params.tasks);
+        tasks.push(taskInfo)
+        navigation.navigate(route.params.sender,{tasks: JSON.stringify(tasks), listID: route.params.listID});
       }
     } catch (error) {
       alert('create task failed' + error.message);
@@ -105,6 +97,10 @@ export default function App({ navigation }) {
 
   useEffect(() => {
     setTaskName('');
+    setDeadlineEnabled(false);
+    setDate(new Date());
+    setTime(new Date('Jan 1, 2023, 12:00:00'));
+    setDesc('');
   }, []);
 
   return (
@@ -115,7 +111,7 @@ export default function App({ navigation }) {
         <View style={styles.headerContainer}>
           <TouchableOpacity
             onPress={() => {
-              navigation.navigate('NewListsScreen');
+              navigation.navigate(route.params.sender, {listID: route.params.listID});
             }}>
             <AntDesign name="leftcircleo" style={styles.returnIcon} />
           </TouchableOpacity>
@@ -249,6 +245,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10
   },
   titleInput: {
+    textAlign: "center",
     fontSize: 28,
     color: 'white',
     paddingLeft: 20,

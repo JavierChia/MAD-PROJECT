@@ -11,7 +11,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 //Screens
 import HomeScreen from './Screens/HomeScreen';
@@ -88,36 +88,39 @@ export default function App() {
         setLoggedIn(false);
       }
     });
-    let eventListener = EventRegister.addEventListener(
-      "changeTheme",
-      (data) => {
-        setDarkMode(data)
-      });
-    return () => {
-      EventRegister.removeEventListener(eventListener)
-    };
+  }, []);
+
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [mode, setMode] = useState(false);
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setLoggedIn(true);
+      } else {
+        setLoggedIn(false);
+      }
+    });
   }, []);
 
 
   return (
-    <themeContext.Provider value={darkMode === true ?  theme.light : theme.dark}>
-      <NavigationContainer>
-        {loggedIn ? (
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name='NavigationBar' component={NavigationBar} />
-            <Stack.Screen name='NewListsScreen' component={NewListsScreen} />
-            <Stack.Screen name='TasksScreen' component={TasksScreen} />
-            <Stack.Screen name='NewTaskScreen' component={NewTaskScreen} />
-            <Stack.Screen name='EditTaskScreen' component={EditTaskScreen} />
-            {/* <Stack.Screen name='EditListScreen' component={EditListScreen} /> */}
-          </Stack.Navigator>
-        ) : (
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name='LoginScreen' component={LoginScreen} />
-            <Stack.Screen name='RegisterScreen' component={RegisterScreen} />
-          </Stack.Navigator>
-        )}
-      </NavigationContainer>
-    </themeContext.Provider>
+    <NavigationContainer>
+      {loggedIn ? (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name='NavigationBar' component={NavigationBar} />
+          <Stack.Screen name='NewListsScreen' component={NewListsScreen} />
+          <Stack.Screen name='TasksScreen' component={TasksScreen} />
+          <Stack.Screen name='NewTaskScreen' component={NewTaskScreen} />
+          <Stack.Screen name='EditTaskScreen' component={EditTaskScreen} />
+          {/* <Stack.Screen name='EditListScreen' component={EditListScreen} /> */}
+        </Stack.Navigator>
+      ) : (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name='LoginScreen' component={LoginScreen} />
+          <Stack.Screen name='RegisterScreen' component={RegisterScreen} />
+        </Stack.Navigator>
+      )}
+    </NavigationContainer>
   )
 }

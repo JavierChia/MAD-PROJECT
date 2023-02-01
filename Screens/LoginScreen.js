@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Image, SafeAreaView, View, Text, StyleSheet, useWindowDimensions, TextInput, TouchableOpacity, StatusBar } from 'react-native';
-import fireBaseApp from './firebase';
+import {app as firebase} from './firebase'
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth"
 import Icon from 'react-native-vector-icons/Ionicons';
 import Checkbox from 'expo-checkbox';
@@ -8,8 +8,7 @@ import { LogBox } from 'react-native';
 
 LogBox.ignoreLogs(['AsyncStorage has been extracted from react-native core and will be removed in a future release.']);
 
-const auth = getAuth(fireBaseApp);
-
+const auth = getAuth(firebase);
 
 export default function LoginScreen({ navigation }) {
     const { height } = useWindowDimensions();

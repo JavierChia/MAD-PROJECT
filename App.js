@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+
 import { Fragment } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, StatusBar, LogBox } from 'react-native';
 
@@ -6,6 +7,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 //Screens
@@ -55,6 +57,7 @@ const NavigationBar = () => {
             },
 
           })}
+          })}
         >
           <Tab.Screen name='Home' component={HomeScreen} />
           <Tab.Screen name='Lists' component={ListsScreen} />
@@ -68,8 +71,22 @@ const NavigationBar = () => {
 
 const Stack = createStackNavigator();
 const auth = getAuth();
+const auth = getAuth();
 
 export default function App() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [mode, setMode] = useState(false);
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setLoggedIn(true);
+      } else {
+        setLoggedIn(false);
+      }
+    });
+  }, []);
+
   const [loggedIn, setLoggedIn] = useState(false);
   const [mode, setMode] = useState(false);
 

@@ -22,32 +22,26 @@ import CheckBox from 'expo-checkbox';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { app as firebase } from './firebase';
 import { collection, getFirestore, doc, getDoc, getDocs } from "firebase/firestore";
+import { useIsFocused } from '@react-navigation/core';
 
 const db = getFirestore(firebase)
 const auth = getAuth();
 
-export default function App({ navigation }) {
+export default function App({ route, navigation }) {
+
+  const isFocused = useIsFocused();
+  var listID = "";
+  var uid = "";
+
   const [tasksList, setTasksList] = useState([]);
   const [listName, setListName] = useState('');
-  const [listID,setListID] = useState("VGhiRyHBnIygTLZxuMGP");
-
-  const [listRef,setListRef] = useState(null);
-  const [tasksRef,setTasksRef] = useState(null);
-
-  const getUser = () => {
-    onAuthStateChanged(auth, (user) => {
-      const uid = user.uid;
-      alert("User ID:" + uid);
-      setTasksRef(doc(db,"/users/" + uid))
-      setListRef(collection(db,`/users/${uid}/Lists/${listID}/Tasks`))
-    });
-  }
 
   const readData = async () => {
     try {
-      list = await getDoc(listRef);
+      const listRef = doc(db,"users",uid,"Lists",listID);
+      const list = await getDoc(listRef);
       setListName(list.data().listName);
-      const tasks = await getDocs(tasksRef);
+      const tasks = await getDocs(collection(db,"users",uid,"Lists",listID,"Tasks"));
       var tasksData = tasks.docs.map((doc) => {
         return { id: doc.id, ...doc.data() };
       });
@@ -77,14 +71,18 @@ export default function App({ navigation }) {
       }
       setTasksList(TASKS);
     } catch (error) {
-      alert(error);
+      // alert(error + "je");
     }
   };
 
   useEffect(() => {
-    readData();
-    getUser();
-  }, []);
+    onAuthStateChanged(auth, (user) => {
+      uid = user.uid;
+      listID = route.params.listID;
+      readData()
+      
+    });
+  }, [isFocused]);
 
   const Tasks = () => {
     return (
@@ -162,7 +160,10 @@ export default function App({ navigation }) {
             </TouchableOpacity>
             <Text style={styles.header}>{listName}</Text>
           </View>
-          <Ionicons name="settings-outline" style={styles.returnIcon} />
+          <TouchableOpacity onPress={() => {
+            navigation.navigate("EditListScreen",{listID: route.params.listID})}}>
+            <Ionicons name="settings-outline" style={styles.returnIcon} />
+          </TouchableOpacity>
         </View>
 
         <Tasks />

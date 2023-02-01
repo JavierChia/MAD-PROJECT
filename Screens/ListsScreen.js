@@ -42,8 +42,8 @@ export default function ListsScreen({ navigation }, id) {
             const sortedListNames = lists.docs
                 .map((listData) => ({
                     id: listData.id,
-                    ListName: listData.data().ListName,
-                    isStarred: listData.data().isStarred,
+                    ListName: listData.data().listName,
+                    isStarred: listData.data().starred,
                     NumberOfTasks: listData.data().NumberOfTasks,
                     TasksDone: listData.data().TasksDone,
                     Overdue: listData.data().Overdue,
@@ -81,7 +81,7 @@ export default function ListsScreen({ navigation }, id) {
                 renderItem={({ item, index }) => (
                     <Pressable key={index} style={[styles.listsContainer, item.NumberOfTasks === item.TasksDone
                         ? { backgroundColor: "#03EF62", borderWidth: 2 }
-                        : {}, item.Overdue ? { backgroundColor: "#fd3259", borderWidth: 2 } : {}]} onPress={() => navigation.navigate("TasksScreen")}>
+                        : {}, item.Overdue ? { backgroundColor: "#fd3259", borderWidth: 2 } : {}]} onPress={() => navigation.navigate("TasksScreen",{listID:item.id})}>
                         <View style={styles.starAndName}>
                             {!item.Overdue && !(item.NumberOfTasks === item.TasksDone) && (
                                 <IAD

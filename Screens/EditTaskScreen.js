@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   createButton: {
-    marginTop: "20%",
+    marginTop: "37%",
     width: '50%',
     flex: 0,
     backgroundColor: '#03EF62',

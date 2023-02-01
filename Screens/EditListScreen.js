@@ -9,6 +9,7 @@ import {
     SafeAreaView,
     FlatList,
     StatusBar,
+    Alert
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -16,11 +17,10 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useIsFocused } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { app as firebase } from './firebase';
-import { collection, getFirestore, getDoc, getDocs, setDoc, doc } from "firebase/firestore";
+import { collection, getFirestore, getDoc, getDocs, setDoc, doc, deleteDoc } from "firebase/firestore";
 
 const db = getFirestore(firebase)
 const auth = getAuth();
-var loaded = false;
 var uid = "";
 var listID = "";
 
@@ -68,7 +68,7 @@ export default function App({ route, navigation }) {
                 setTasks(tasksData);
                 setListName(list.data().listName);
                 setStarred(list.data().starred);
-                if (route.params.tasks != undefined) {
+                if (route.params.tasks != undefined && isFocused) {
                     setTasks(JSON.parse(route.params.tasks))
                 }
             } catch (error) {
@@ -115,8 +115,7 @@ export default function App({ route, navigation }) {
     };
 
     const removeTask = async (index) => {
-        const tasks = []
-        alert(index)
+        const tasks = [];
         for (let i in taskList) {
             if (i != index) {
                 tasks.push(taskList[i])
@@ -137,8 +136,8 @@ export default function App({ route, navigation }) {
                         <Text style={styles.taskText}>{item.name}</Text>
                         <Text>{formatTime(item.deadline)}</Text>
                     </View>
-                    <TouchableOpacity style={styles.remove} onPress={() => { removeTask(index) }}>
-                        <MaterialCommunityIcons style={{ fontSize: 50 }} color="white" name='cancel' />
+                    <TouchableOpacity onPress={() => { removeTask(index) }}>
+                        <MaterialCommunityIcons style={{ fontSize: 50 }} color="red" name='cancel' />
                     </TouchableOpacity>
                 </TouchableOpacity>
             </View>
@@ -157,6 +156,25 @@ export default function App({ route, navigation }) {
                         <AntDesign name="leftcircleo" style={styles.returnIcon} />
                     </TouchableOpacity>
                     <Text style={styles.header}>Edit List</Text>
+                    <TouchableOpacity
+                        style={{marginLeft:"35%"}}
+                        onPress={() => {
+                            Alert.alert("Delete " + listName + "?",null,[
+                                {
+                                    text: "cancel",
+                                    style: 'cancel'
+                                },
+                                {
+                                    text: "delete",
+                                    onPress: async () => {
+                                        deleteDoc(doc(db, `users/${uid}/Lists/${listID}`));
+                                        navigation.navigate("Lists")
+                                    }
+                                }
+                            ]);
+                        }}>
+                        <MaterialCommunityIcons name="delete" color="red" style={{fontSize:35}} />
+                    </TouchableOpacity>
                 </View>
 
                 <View style={[styles.settings, { flex: 8 }]}>
@@ -308,14 +326,6 @@ const styles = StyleSheet.create({
         color: 'black',
         fontWeight: '500'
     },
-    remove: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: 'red',
-        justifyContent: 'center',
-        alignItems: "center"
-    },
     newTask: {
         backgroundColor: "#58F",
         width: '90%',
@@ -331,7 +341,9 @@ const styles = StyleSheet.create({
     createButton: {
         backgroundColor: '#03EF62',
         width: '40%',
-        borderRadius: 20,
+        height: 60,
+        justifyContent: "center",
+        borderRadius: 10,
     },
     buttonText: {
         fontSize: 26,

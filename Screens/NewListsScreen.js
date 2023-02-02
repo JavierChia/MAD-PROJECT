@@ -79,7 +79,8 @@ export default function App({ route, navigation }) {
           listName: listName,
           starred: starred,
           NumberOfTasks: taskList.length,
-          TasksDone: 0
+          TasksDone: 0,
+          Overdue: false,
         })
         taskList.forEach( async (task, i) =>  {
           await setDoc(doc(db,`users/${uid}/Lists/${docRef.id}/Tasks/Task${i}`),{

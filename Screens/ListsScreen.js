@@ -47,23 +47,23 @@ export default function ListsScreen({ navigation }) {
             const sortedListNames = lists.docs
                 .map((listData) => ({
                     id: listData.id,
-                    ListName: listData.data().ListName,
-                    isStarred: listData.data().isStarred,
+                    listName: listData.data().listName,
+                    starred: listData.data().starred,
                     NumberOfTasks: listData.data().NumberOfTasks,
                     TasksDone: listData.data().TasksDone,
                     Overdue: listData.data().Overdue,
                 }))
-                .sort((a, b) => b.isStarred - a.isStarred);
+                .sort((a, b) => b.starred - a.starred);
             setListNames(sortedListNames);
         });
     };
 
-    //function to toggle on/off isStarred, as well s update the data base
+    //function to toggle on/off starred, as well s update the data base
     const toggleStar = async (id, oStarred) => {
         try {
             const ref = doc(db, "users", uid, "Lists", id);
             updateDoc(ref, {
-                isStarred: !oStarred,
+                starred: !oStarred,
             })
         } catch (error) {
             alert('Error toggling' + error);
@@ -91,14 +91,14 @@ export default function ListsScreen({ navigation }) {
                             {!item.Overdue && !(item.NumberOfTasks === item.TasksDone) && (
                                 <IAD
                                     style={[styles.starButton, { color: theme.color }]}
-                                    name={item.isStarred ? "star" : "staro"}
+                                    name={item.starred ? "star" : "staro"}
                                     size={30}
                                     color="#000"
                                     onPress={() => {
-                                        toggleStar(item.id, item.isStarred);
+                                        toggleStar(item.id, item.starred);
                                     }}
                                 />
-                            )}<Text style={[styles.listStyle, { color: theme.color }]}>{item.ListName}</Text>
+                            )}<Text style={[styles.listStyle, { color: theme.color }]}>{item.listName}</Text>
                         </View>
                         {item.NumberOfTasks === item.TasksDone ? (
                             <II

@@ -11,7 +11,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 //Screens
 import HomeScreen from './Screens/HomeScreen';
@@ -88,23 +87,19 @@ export default function App() {
         setLoggedIn(false);
       }
     });
-  }, []);
-
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [mode, setMode] = useState(false);
-
-  useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setLoggedIn(true);
-      } else {
-        setLoggedIn(false);
-      }
-    });
+    let eventListener = EventRegister.addEventListener(
+      "changeTheme",
+      (data) => {
+        setDarkMode(data)
+      });
+    return () => {
+      EventRegister.removeEventListener(eventListener)
+    };
   }, []);
 
 
   return (
+    <themeContext.Provider value={darkMode === true ?  theme.light : theme.dark}>
     <NavigationContainer>
       {loggedIn ? (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -122,5 +117,6 @@ export default function App() {
         </Stack.Navigator>
       )}
     </NavigationContainer>
+    </themeContext.Provider>
   )
 }

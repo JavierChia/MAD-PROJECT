@@ -315,7 +315,9 @@ const styles = StyleSheet.create({
   createButton: {
     backgroundColor: '#03EF62',
     width: '40%',
-    borderRadius: 20,
+    height: 60,
+    justifyContent: "center",
+    borderRadius: 10
   },
   buttonText: {
     fontSize: 26,

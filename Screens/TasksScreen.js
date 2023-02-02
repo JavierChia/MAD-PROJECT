@@ -1,5 +1,4 @@
-import React, { Fragment } from 'react';
-import { useState, useEffect } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import {
   Text,
   View,
@@ -19,6 +18,7 @@ import {
 } from '@expo/vector-icons';
 import CheckBox from 'expo-checkbox';
 
+const Task = require("./TaskComponent")
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { app as firebase } from './firebase';
 import { collection, getFirestore, doc, getDoc, getDocs } from "firebase/firestore";
@@ -114,34 +114,9 @@ export default function App({ route, navigation }) {
 
   const renderTask = ({ item }) => {
     const taskInfo = JSON.parse(item);
-    const [isChecked, setChecked] = useState(false);
-
-    const formatTime = (date) => {
-      var hours = date.getHours();
-      var minutes = date.getMinutes();
-      var ampm = hours >= 12 ? 'pm' : 'am';
-      hours = hours % 12;
-      hours = hours ? hours : 12; // the hour '0' should be '12'
-      minutes = minutes < 10 ? '0' + minutes : minutes;
-      var strTime = hours + ':' + minutes + ' ' + ampm;
-      return strTime;
-    };
 
     return (
-      <View style={styles.task}>
-        <View style={{flex: 0, flexDirection: "column"}}>
-        <Text style={styles.taskText}>{taskInfo.name}</Text>
-        <Text style={styles.taskTime}>
-          {taskInfo.deadline ? formatTime(new Date(taskInfo.deadline)) : ''}
-        </Text>
-        </View>
-
-        <CheckBox
-          color={isChecked ? 'black' : 'black'}
-          value={isChecked}
-          onValueChange={setChecked}
-        />
-      </View>
+      <Task name={taskInfo.name} desc={taskInfo.desc} deadline={taskInfo.deadline}/>
     );
   };
 
@@ -213,6 +188,7 @@ const styles = StyleSheet.create({
   task: {
     padding: 16,
     width: '90%',
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -220,11 +196,5 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     marginLeft: '5%',
     borderRadius: 10,
-  },
-  taskText: {
-    fontSize: 20,
-  },
-  taskTime: {
-    border: 'black 2 solid',
-  },
+  }
 });

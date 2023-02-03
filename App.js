@@ -108,7 +108,7 @@ export default function App() {
           <Stack.Screen name='TasksScreen' component={TasksScreen} />
           <Stack.Screen name='NewTaskScreen' component={NewTaskScreen} />
           <Stack.Screen name='EditTaskScreen' component={EditTaskScreen} />
-          {/* <Stack.Screen name='EditListScreen' component={EditListScreen} /> */}
+          <Stack.Screen name='EditListScreen' component={EditListScreen} />
         </Stack.Navigator>
       ) : (
         <Stack.Navigator screenOptions={{ headerShown: false }}>

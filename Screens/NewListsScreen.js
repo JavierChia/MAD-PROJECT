@@ -91,6 +91,14 @@ export default function App({ route, navigation }) {
           }).catch((error)=> {
             alert(error)
           })
+          await setDoc(doc(db,`users/${uid}/Tasks`),{
+            name: task.name,
+            deadline: task.deadline,
+            desc: task.desc,
+            done: "false"
+          }).catch((error)=> {
+            alert(error)
+          })
         });
 
         navigation.navigate("Lists")

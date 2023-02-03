@@ -86,7 +86,7 @@ export default function ListsScreen({ navigation }) {
                 renderItem={({ item, index }) => (
                     <Pressable key={index} style={[styles.listsContainer, { backgroundColor: theme.cardBackgroundColor, borderColor: theme.borderColor }, item.NumberOfTasks === item.TasksDone
                         ? { backgroundColor: "#36da45" }
-                        : {}, item.Overdue ? { backgroundColor: "#fd3259", borderWidth: 2 } : {}]} onPress={() => navigation.navigate("TasksScreen")}>
+                        : {}, item.Overdue ? { backgroundColor: "#fd3259", borderWidth: 2 } : {}]} onPress={() => navigation.navigate("TasksScreen", {listID: item.id})}>
                         <View style={styles.starAndName}>
                             {!item.Overdue && !(item.NumberOfTasks === item.TasksDone) && (
                                 <IAD

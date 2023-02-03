@@ -10,7 +10,7 @@ import {
     TouchableOpacity,
     StatusBar,
   } from 'react-native';
-
+import { collection, getFirestore, doc, getDoc, getDocs } from "firebase/firestore";
 import CheckBox from 'expo-checkbox';
 
 const formatTime = (date) => {
@@ -41,7 +41,13 @@ const Task = (props) => {
         <CheckBox
           color={isChecked ? 'black' : 'black'}
           value={isChecked}
-          onValueChange={setChecked}
+          onValueChange={() => {
+            const ref = doc(db, "users", uid, "Lists", listID, "Tasks", props.id);
+            updateDoc(ref, {
+              done: !isChecked,
+            });
+            setChecked()
+          }}
         />
         </View>
       </View>
@@ -64,23 +70,3 @@ const styles = StyleSheet.create({
 })
 
 module.exports = Task;
-
-      // <View style={styles.task}>
-      //   <View style={{width: "87%", justifyContent: "center"}}>
-          
-      //     <Text style={{fontSize:20,fontWeight:"bold"}}>{taskInfo.name}</Text>
-      //     {taskInfo.desc != "" && (
-      //     <Text style={{fontSize:14, marginBottom:5}}>{taskInfo.desc}</Text>)}
-      //     {taskInfo.deadline && (
-      //     <Text style={{fontWeight:"500",fontSize:14, color: "#58F"}}>
-      //       {formatTime(new Date(taskInfo.deadline))}
-      //     </Text>)}
-      //   </View>
-      //   <View style={{width: "8%"}}>
-      //   <CheckBox
-      //     color={isChecked ? 'black' : 'black'}
-      //     value={isChecked}
-      //     onValueChange={setChecked}
-      //   />
-      //   </View>
-      // </View>

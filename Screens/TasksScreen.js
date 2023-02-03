@@ -18,20 +18,31 @@ import {
 } from '@expo/vector-icons';
 import CheckBox from 'expo-checkbox';
 
-const Task = require("./TaskComponent")
+// const Task = require("./TaskComponent")
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { app as firebase } from './firebase';
-import { collection, getFirestore, doc, getDoc, getDocs } from "firebase/firestore";
+import { collection, getFirestore, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
 import { useIsFocused } from '@react-navigation/core';
 
 const db = getFirestore(firebase)
 const auth = getAuth();
+var uid = auth.currentUser.uid;
+
+const formatTime = (date) => {
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var ampm = hours >= 12 ? 'pm' : 'am';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  minutes = minutes < 10 ? '0' + minutes : minutes;
+  var strTime = hours + ':' + minutes + ' ' + ampm;
+  return strTime;
+};
 
 export default function App({ route, navigation }) {
 
   const isFocused = useIsFocused();
   var listID = "";
-  var uid = "";
 
   const [tasksList, setTasksList] = useState([]);
   const [listName, setListName] = useState('');
@@ -80,7 +91,6 @@ export default function App({ route, navigation }) {
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
-      uid = user.uid;
       listID = route.params.listID;
       readData()
       
@@ -114,12 +124,45 @@ export default function App({ route, navigation }) {
       </Text>
     );
   };
-
+  const toggleCheckBox = (id, isChecked) => {
+    try {
+      const ref = doc(db, "users", uid, "Lists", route.params.listID, "Tasks", id);
+      updateDoc(ref, {
+        done: !isChecked,
+      });
+    } catch (error) {
+      alert(error);
+      console.log(error);
+    }
+  };
+  
   const renderTask = ({ item }) => {
+    
     const taskInfo = JSON.parse(item);
-
+    const [isChecked, setChecked] = useState(taskInfo.done);
     return (
-      <Task name={taskInfo.name} desc={taskInfo.desc} deadline={taskInfo.deadline}/>
+      <View style={styles.task}>
+      <View style={{width: "87%", justifyContent: "center"}}>
+        
+        <Text style={{fontSize:20,fontWeight:"bold"}}>{taskInfo.name}</Text>
+        {taskInfo.desc != "" && (
+        <Text style={{fontSize:14, marginBottom:5}}>{taskInfo.desc}</Text>)}
+        {taskInfo.deadline && (
+        <Text style={{fontWeight:"500",fontSize:14, color: "#58F"}}>
+          {formatTime(new Date(taskInfo.deadline))}
+        </Text>)}
+      </View>
+      <View style={{width: "8%"}}>
+      <CheckBox
+        color={isChecked ? 'black' : 'black'}
+        value={isChecked}
+        onValueChange={() => {
+          toggleCheckBox(taskInfo.id,isChecked)
+          setChecked(!isChecked)
+        }}
+      />
+      </View>
+    </View>
     );
   };
 

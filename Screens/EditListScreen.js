@@ -168,6 +168,8 @@ export default function App({ route, navigation }) {
             deadline: task.deadline,
             desc: task.desc,
             done: false,
+            listID: listID,
+            taskID: "Task" + i
           }).catch((error) => {
             alert(error);
           });
@@ -176,6 +178,8 @@ export default function App({ route, navigation }) {
             deadline: task.deadline,
             desc: task.desc,
             done: false,
+            listID: listID,
+            taskID: "Task" + i
           }).catch((error) => {
             alert(error);
           });

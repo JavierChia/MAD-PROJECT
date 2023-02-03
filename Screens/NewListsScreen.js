@@ -82,24 +82,27 @@ export default function App({ route, navigation }) {
           TasksDone: 0,
           Overdue: false,
         })
+        
         taskList.forEach( async (task, i) =>  {
           await setDoc(doc(db,`users/${uid}/Lists/${docRef.id}/Tasks/Task${i}`),{
             name: task.name,
             deadline: task.deadline,
             desc: task.desc,
-            done: "false"
+            done: false
           }).catch((error)=> {
             alert(error)
           })
-          await setDoc(doc(db,`users/${uid}/Tasks`),{
+          await addDoc(collection(db,`users/${uid}/Tasks`),{
             name: task.name,
             deadline: task.deadline,
             desc: task.desc,
-            done: "false"
+            done: false
           }).catch((error)=> {
             alert(error)
           })
         });
+
+
 
         navigation.navigate("Lists")
       }

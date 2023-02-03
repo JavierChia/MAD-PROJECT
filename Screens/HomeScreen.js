@@ -33,7 +33,6 @@ const db = getFirestore(firebase);
 export default function NewHomeScreen() {
   const [tasksData, setTasksData] = useState([]);
   const [uid, setUid] = useState("");
-  const [tasksDone, setTasksDone] = useState(0)
   const theme = useContext(themeContext);
 
   useEffect(() => {
@@ -84,7 +83,6 @@ export default function NewHomeScreen() {
       }
     } catch (error) {
       alert(error);
-      console.log(error);
     }
   };
 

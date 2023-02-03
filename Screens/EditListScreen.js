@@ -137,9 +137,7 @@ export default function App({ route, navigation }) {
             listid: listData.id,
           }));
           allLists.push(...allListsID);
-          console.log(allLists);
           allLists.forEach(async (list) => {
-            console.log(list);
             const ref = await collection(
               db,
               "users",
@@ -285,9 +283,7 @@ export default function App({ route, navigation }) {
                         listid: listData.id,
                       }));
                       allLists.push(...allListsID);
-                      console.log(allLists);
                       allLists.forEach(async (list) => {
-                        console.log(list);
                         const ref = await collection(
                           db,
                           "users",

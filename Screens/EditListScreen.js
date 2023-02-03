@@ -89,9 +89,13 @@ export default function App({ route, navigation }) {
     };
 
     onAuthStateChanged(auth, (user) => {
-      uid = user.uid;
+      if (user) {
+        uid = user.uid;
       listID = route.params.listID;
       readData();
+      } else {
+        return;
+      }
     });
   }, [route.params.tasks]);
 

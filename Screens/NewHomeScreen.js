@@ -21,6 +21,8 @@ export default function NewHomeScreen() {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         setUid(user.uid);
+      } else {
+        return;
       }
     });
 

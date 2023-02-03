@@ -57,8 +57,12 @@ export default function App({ route, navigation }) {
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
+      if (user) {
       const uid = user.uid;
       setUID(uid)
+      } else {
+        return;
+      }
     });
     if (isFocused) {
       if (route.params) {

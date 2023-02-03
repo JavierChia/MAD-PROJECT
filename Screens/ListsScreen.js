@@ -25,6 +25,9 @@ export default function ListsScreen({ navigation }) {
                 setUid(user.uid);
                 getListName(user.uid);
             }
+            else {
+                return;
+              }
         });
 
     }, []);

@@ -33,6 +33,7 @@ const db = getFirestore(firebase);
 export default function NewHomeScreen() {
   const [tasksData, setTasksData] = useState([]);
   const [uid, setUid] = useState("");
+  const [tasksDone, setTasksDone] = useState(0)
   const theme = useContext(themeContext);
 
   useEffect(() => {
@@ -40,6 +41,8 @@ export default function NewHomeScreen() {
       if (user) {
         setUid(user.uid);
         getTasks(user.uid);
+      } else {
+        return;
       }
     });
   }, []);
@@ -52,25 +55,40 @@ export default function NewHomeScreen() {
         name: taskData.data().name,
         desc: taskData.data().desc,
         done: taskData.data().done,
+        taskID: taskData.data().taskID,
+        listID: taskData.data().listID,
         deadline: new Date(taskData.data().deadline)//take out
       }));
       setTasksData(allTasks);
     });
   };
 
-  const toggleCheckBox = (id, isChecked) => {
+  const toggleCheckBox = async (id, isChecked, taskID, listID) => {
     try {
       const ref = doc(db, "users", uid, "Tasks", id);
       updateDoc(ref, {
         done: !isChecked,
       });
+      const ref2 = doc(db, "users", uid, "Lists", listID, "Tasks", taskID);
+      updateDoc(ref2, {
+        done: !isChecked,
+      });
+
+      const ref3 = doc(db, "users", uid, "Lists", listID);
+      const docSnap = await getDoc(ref3)
+      if (!isChecked) {
+        updateDoc(ref3, {TasksDone : (docSnap.data().TasksDone+1)})
+      }
+      else {
+        updateDoc(ref3, {"TasksDone" : (docSnap.data().TasksDone-1)})
+      }
     } catch (error) {
       alert(error);
       console.log(error);
     }
   };
 
-  const Task = ({ title, done, id, deadline }) => {
+  const Task = ({ title, done, id, deadline, taskID, listID }) => {
     const [isChecked, setChecked] = useState(done);
     return (
       <View
@@ -82,7 +100,7 @@ export default function NewHomeScreen() {
           color={isChecked ? theme.c1 : theme.c2}
           value={isChecked}
           onValueChange={() => {
-            setChecked, toggleCheckBox(id, isChecked);
+            setChecked, toggleCheckBox(id, isChecked, taskID, listID);
           }}
         />
       </View>
@@ -134,7 +152,7 @@ export default function NewHomeScreen() {
         )}
         renderItem={({ item }) => (
           <View>
-            <Task title={item.name} done={item.done} id={item.id} deadline={item.deadline} />
+            <Task title={item.name} done={item.done} id={item.id} deadline={item.deadline} taskID = {item.taskID} listID = {item.listID}/>
           </View>
         )}
         keyExtractor={(item) => item.id}

@@ -95,6 +95,8 @@ export default function SettingsScreen({ navigation }) {
       if (user) {
         setUid(user.uid);
         getMode(user.uid);
+      } else {
+        return;
       }
     });
   }, []);

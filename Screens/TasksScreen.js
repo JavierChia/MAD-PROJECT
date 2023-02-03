@@ -92,9 +92,14 @@ export default function App({ route, navigation }) {
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
-      setUID(user.uid)
+      if(user) {
+        setUID(user.uid)
       listID = route.params.listID;
       readData()
+      } else {
+        return;
+      }
+      
       
     });
   }, [isFocused]);
@@ -135,7 +140,6 @@ export default function App({ route, navigation }) {
       const q = query(collection(db, "users", uid, "Tasks"), where("taskID", "==", id));
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((docu) => {
-
         const ref2 = doc(db, "users", uid, "Tasks", docu.id);
         updateDoc(ref2, {
           done: !isChecked,

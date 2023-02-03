@@ -52,6 +52,7 @@ export default function App({ route, navigation }) {
       const listRef = doc(db,"users",uid,"Lists",listID);
       const list = await getDoc(listRef);
       setListName(list.data().listName);
+      
       const tasks = await getDocs(collection(db,"users",uid,"Lists",listID,"Tasks"));
       var tasksData = tasks.docs.map((doc) => {
         return { id: doc.id, ...doc.data() };

@@ -56,7 +56,6 @@ export default function NewHomeScreen() {
       }));
       setTasksData(allTasks);
     });
-    console.log(tasksData);
   };
 
   const toggleCheckBox = (id, isChecked) => {
@@ -96,14 +95,15 @@ export default function NewHomeScreen() {
       data: tasksData.filter(
         (task) =>
           !task.done &&
-          task.deadline.toDateString() === new Date().toDateString() //fwahefleka
+          task.deadline.toDateString() === new Date().toDateString() &&
+          !(new Date() - task.deadline > 0) //fwahefleka
       ),
     },
     {
       title: "Overdue",
       data: tasksData.filter(
         (task) =>
-          !task.done &&
+          !task.done && task.deadline != new Date(null) &&
           new Date() - task.deadline > 0//fehwafiaew
       ),
     },

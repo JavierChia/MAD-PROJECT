@@ -144,21 +144,20 @@ export default function App({ route, navigation }) {
               list.listid,
               "Tasks"
             );
-            onSnapshot(ref, (listTasks) => {
-              if (listTasks != listID) {
-                listTasks.forEach(async (task) => {
-                  await addDoc(collection(db, "users", uid, "Tasks"), {
-                    name: task.data().name,
-                    deadline: task.data().deadline,
-                    desc: task.data().desc,
-                    done: false,
-                  })
-                  .catch((error) => {
-                    alert(error);
-                  });
+          });
+          onSnapshot(ref, (listTasks) => {
+            if (listTasks != listID) {
+              listTasks.forEach(async (task) => {
+                await addDoc(collection(db, "users", uid, "Tasks"), {
+                  name: task.data().name,
+                  deadline: task.data().deadline,
+                  desc: task.data().desc,
+                  done: false,
+                }).catch((error) => {
+                  alert(error);
                 });
-              }
-            });
+              });
+            }
           });
         });
 
@@ -168,7 +167,7 @@ export default function App({ route, navigation }) {
             name: task.name,
             deadline: task.deadline,
             desc: task.desc,
-            done: "false",
+            done: false,
           }).catch((error) => {
             alert(error);
           });
@@ -176,7 +175,7 @@ export default function App({ route, navigation }) {
             name: task.name,
             deadline: task.deadline,
             desc: task.desc,
-            done: "false",
+            done: false,
           }).catch((error) => {
             alert(error);
           });
@@ -264,6 +263,50 @@ export default function App({ route, navigation }) {
                   onPress: async () => {
                     deleteDoc(doc(db, `users/${uid}/Lists/${listID}`));
                     navigation.navigate("Lists");
+                    //delete everything udner TASKS
+                    const q2 = query(collection(db, `users/${uid}/Tasks`));
+                    const query2Snapshot = await getDocs(q2);
+                    query2Snapshot.forEach((doc) => {
+                      deleteDoc(doc.ref);
+                    });
+                    //add back all the remaining tasks in the remaining lists
+                    var allLists = [];
+                    const ref = await collection(db, "users", uid, "Lists");
+                    onSnapshot(ref, (lists) => {
+                      const allListsID = lists.docs.map((listData) => ({
+                        listid: listData.id,
+                      }));
+                      allLists.push(...allListsID);
+                      console.log(allLists);
+                      allLists.forEach(async (list) => {
+                        console.log(list);
+                        const ref = await collection(
+                          db,
+                          "users",
+                          uid,
+                          "Lists",
+                          list.listid,
+                          "Tasks"
+                        );
+                      });
+                      onSnapshot(ref, (listTasks) => {
+                        if (listTasks != listID) {
+                          listTasks.forEach(async (task) => {
+                            await setDoc(
+                              collection(db, "users", uid, "Tasks"),
+                              {
+                                name: task.data().name,
+                                deadline: task.data().deadline,
+                                desc: task.data().desc,
+                                done: false,
+                              }
+                            ).catch((error) => {
+                              alert(error);
+                            });
+                          });
+                        }
+                      });
+                    });
                   },
                 },
               ]);

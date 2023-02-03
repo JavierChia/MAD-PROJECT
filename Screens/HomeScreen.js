@@ -56,7 +56,6 @@ export default function NewHomeScreen() {
       }));
       setTasksData(allTasks);
     });
-    console.log(tasksData, tasksData[4].deadline ,'NAD', new Date(null));
   };
 
   const toggleCheckBox = (id, isChecked) => {

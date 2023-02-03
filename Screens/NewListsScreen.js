@@ -88,7 +88,9 @@ export default function App({ route, navigation }) {
             name: task.name,
             deadline: task.deadline,
             desc: task.desc,
-            done: false
+            done: false,
+            listID: docRef.id,
+            taskID: "Task" + i
           }).catch((error)=> {
             alert(error)
           })
@@ -96,7 +98,9 @@ export default function App({ route, navigation }) {
             name: task.name,
             deadline: task.deadline,
             desc: task.desc,
-            done: false
+            done: false,
+            listID: docRef.id,
+            taskID: "Task" + i
           }).catch((error)=> {
             alert(error)
           })

@@ -26,7 +26,6 @@ import { useIsFocused } from '@react-navigation/core';
 
 const db = getFirestore(firebase)
 const auth = getAuth();
-var uid = auth.currentUser.uid;
 
 const formatTime = (date) => {
   var hours = date.getHours();
@@ -43,6 +42,7 @@ export default function App({ route, navigation }) {
 
   const isFocused = useIsFocused();
   var listID = "";
+  var [uid,setUID] = useState(auth.currentUser.uid)
 
   const [tasksList, setTasksList] = useState([]);
   const [listName, setListName] = useState('');
@@ -92,6 +92,7 @@ export default function App({ route, navigation }) {
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
+      setUID(user.uid)
       listID = route.params.listID;
       readData()
       

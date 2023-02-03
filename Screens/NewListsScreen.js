@@ -16,7 +16,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useIsFocused } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { app as firebase } from './firebase';
-import { collection, getFirestore, addDoc, setDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, getFirestore, addDoc, setDoc, doc,, updateDoc updateDoc} from "firebase/firestore";
 
 const db = getFirestore(firebase)
 const auth = getAuth();
@@ -118,6 +118,7 @@ export default function App({ route, navigation }) {
 
         navigation.navigate("Lists")
       }
+      
     } catch (error) {
       alert("Error while creating list" + error)
     }

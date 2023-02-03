@@ -155,7 +155,6 @@ export default function App({ route, navigation }) {
       }
     } catch (error) {
       alert(error);
-      console.log(error);
     }
   };
   

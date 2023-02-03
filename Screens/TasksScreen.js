@@ -49,6 +49,9 @@ export default function App({ route, navigation }) {
         if (!a.deadline) {
           return 1;
         }
+        if (!b.deadline) {
+          return -1;
+        }
         return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
       });
       var TASKS = [];

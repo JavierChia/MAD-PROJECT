@@ -17,7 +17,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useIsFocused } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { app as firebase } from './firebase';
-import { collection, getFirestore, getDoc, getDocs, setDoc, doc, deleteDoc } from "firebase/firestore";
+import { collection, getFirestore, getDoc, getDocs, setDoc, doc, deleteDoc, query } from "firebase/firestore";
 
 const db = getFirestore(firebase)
 const auth = getAuth();
@@ -97,6 +97,12 @@ export default function App({ route, navigation }) {
                     NumberOfTasks: taskList.length,
                     TasksDone: 0
                 })
+                const q = query(collection(db, `users/${uid}/Lists/${listID}/Tasks`));
+                const querySnapshot = await getDocs(q);
+
+                querySnapshot.forEach((doc) => {
+                    deleteDoc(doc.ref);      
+                });
                 taskList.forEach(async (task, i) => {
                     await setDoc(doc(db, `users/${uid}/Lists/${listID}/Tasks/Task${i}`), {
                         name: task.name,
@@ -238,7 +244,7 @@ export default function App({ route, navigation }) {
                         <TouchableOpacity
                             style={styles.createButton}
                             onPress={handleCreate}>
-                            <Text style={styles.buttonText}>Save</Text>
+                            <Text style={styles.buttonText}>Edit</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={{ flex: 0.2 }} />

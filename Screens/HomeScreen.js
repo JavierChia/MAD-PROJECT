@@ -52,7 +52,7 @@ export default function NewHomeScreen() {
         name: taskData.data().name,
         desc: taskData.data().desc,
         done: taskData.data().done,
-        deadline: taskData.data().deadline.toDate(),//take out
+        deadline: new Date(taskData.data().deadline)//take out
       }));
       setTasksData(allTasks);
     });
@@ -75,7 +75,7 @@ export default function NewHomeScreen() {
     const [isChecked, setChecked] = useState(done);
     return (
       <View
-        style={[styles.tasks, { borderWidth: 2, borderColor: theme.color, backgroundColor: done ? '#36da45' : (deadline.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) ? '#fd3259' : theme.cardBackgroundColor }]}//fjahjwke
+        style={[styles.tasks, { borderWidth: 2, borderColor: theme.color, backgroundColor: done ? '#36da45' : (new Date() - deadline > 0) ? '#fd3259' : theme.cardBackgroundColor }]}//fjahjwke
       >
         <Text style={[styles.tasksTitle, { color: theme.color }]}>{title}</Text>
         <CheckBox
@@ -104,7 +104,7 @@ export default function NewHomeScreen() {
       data: tasksData.filter(
         (task) =>
           !task.done &&
-          task.deadline.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) //fehwafiaew
+          new Date() - task.deadline > 0//fehwafiaew
       ),
     },
     {

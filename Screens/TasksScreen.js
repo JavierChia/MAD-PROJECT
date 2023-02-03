@@ -21,7 +21,7 @@ import CheckBox from 'expo-checkbox';
 // const Task = require("./TaskComponent")
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { app as firebase } from './firebase';
-import { collection, getFirestore, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import { collection, getFirestore, doc, getDoc, getDocs, updateDoc, where, query, setDoc } from "firebase/firestore";
 import { useIsFocused } from '@react-navigation/core';
 
 const db = getFirestore(firebase)
@@ -126,12 +126,29 @@ export default function App({ route, navigation }) {
       </Text>
     );
   };
-  const toggleCheckBox = (id, isChecked) => {
+  const toggleCheckBox = async (id, isChecked) => {
     try {
       const ref = doc(db, "users", uid, "Lists", route.params.listID, "Tasks", id);
       updateDoc(ref, {
-        done: !isChecked,
+        done: !isChecked
       });
+      const q = query(collection(db, "users", uid, "Tasks"), where("taskID", "==", id));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((docu) => {
+
+        const ref2 = doc(db, "users", uid, "Tasks", docu.id);
+        updateDoc(ref2, {
+          done: !isChecked,
+        });
+      });
+      const ref3 = doc(db, "users", uid, "Lists",route.params.listID);
+      const docSnap = await getDoc(ref3)
+      if (!isChecked) {
+        await updateDoc(ref3, {"TasksDone" : (docSnap.data().TasksDone+1)})
+      }
+      else {
+        await updateDoc(ref3, {"TasksDone" : (docSnap.data().TasksDone-1)})
+      }
     } catch (error) {
       alert(error);
       console.log(error);

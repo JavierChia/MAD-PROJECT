@@ -28,6 +28,7 @@ import {
   query,
   addDoc,
   onSnapshot,
+  updateDoc
 } from "firebase/firestore";
 
 const db = getFirestore(firebase);
@@ -164,9 +165,12 @@ export default function App({ route, navigation }) {
             }
           });
         });
-
+        var Overdue = false
         //adds all tasks to current list and TASKS
         taskList.forEach(async (task, i) => {
+          if (new Date() - new Date(task.deadline) > 0) {
+            Overdue = true;
+          }
           await setDoc(doc(db, `users/${uid}/Lists/${listID}/Tasks/Task${i}`), {
             name: task.name,
             deadline: task.deadline,
@@ -188,6 +192,9 @@ export default function App({ route, navigation }) {
             alert(error);
           });
         });
+        await updateDoc(doc(db,`users/${uid}/Lists/${listID}`), {
+          Overdue: Overdue,
+        })
         navigation.navigate("Lists");
       }
     } catch (error) {

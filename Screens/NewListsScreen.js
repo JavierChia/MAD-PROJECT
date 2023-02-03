@@ -16,7 +16,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useIsFocused } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { app as firebase } from './firebase';
-import { collection, getFirestore, addDoc, setDoc, doc } from "firebase/firestore";
+import { collection, getFirestore, addDoc, setDoc, doc, updateDoc } from "firebase/firestore";
 
 const db = getFirestore(firebase)
 const auth = getAuth();
@@ -86,8 +86,11 @@ export default function App({ route, navigation }) {
           TasksDone: 0,
           Overdue: false,
         })
-        
+        var Overdue = false
         taskList.forEach( async (task, i) =>  {
+          if (new Date() - new Date(task.deadline) > 0) {
+            Overdue = true;
+          }
           await setDoc(doc(db,`users/${uid}/Lists/${docRef.id}/Tasks/Task${i}`),{
             name: task.name,
             deadline: task.deadline,
@@ -109,8 +112,9 @@ export default function App({ route, navigation }) {
             alert(error)
           })
         });
-
-
+        await updateDoc(doc(db,`users/${uid}/Lists/${docRef.id}`), {
+          Overdue: Overdue,
+        })
 
         navigation.navigate("Lists")
       }
